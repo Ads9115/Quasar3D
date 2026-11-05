@@ -7,6 +7,7 @@ namespace qs {
 struct Particle {
     Vec3 position;
     Vec3 velocity;
+    Vec3 prevPosition;
 };
 
 // Everything the simulation needs lives inside World. No global variables.
