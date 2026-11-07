@@ -4,7 +4,8 @@ namespace qs {
 
 class FixedTimestep {
 public:
-    explicit FixedTimestep(double dt) : m_dt(dt) {}
+    explicit FixedTimestep(double dt, double maxFrameTime = 0.25)
+        : m_dt(dt), m_maxFrameTime(maxFrameTime) {}
 
     //will be used to call how many physics steps per frame
     int advance(double frameTime) {
@@ -29,6 +30,7 @@ public:
 private:
     double m_dt;
     double m_accumulator = 0.0f;
+    double maxFrameTime;
 };
 
 }
