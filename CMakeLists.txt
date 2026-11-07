@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(Quasar3D LANGUAGES CXX)
+project(Quasar3D LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,18 +17,25 @@ FetchContent_Declare(Catch2
 FetchContent_Declare(glfw
   GIT_REPOSITORY https://github.com/glfw/glfw.git
   GIT_TAG        3.4)
+FetchContent_Declare(glad
+  GIT_REPOSITORY https://github.com/Dav1dde/glad.git
+  GIT_TAG        v2.0.8
+  SOURCE_SUBDIR  cmake)
 
 set(GLFW_BUILD_DOCS     OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS    OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL        OFF CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(glm Catch2)
+FetchContent_MakeAvailable(glm Catch2 glfw glad)
+
+glad_add_library(glad_gl STATIC REPRODUCIBLE LOADER API gl:core=4.5)
 
 add_subdirectory(modules/core)
 add_subdirectory(modules/math)
 add_subdirectory(modules/physics)
 add_subdirectory(modules/platform)
+add_subdirectory(modules/renderer)
 add_subdirectory(apps/testbed)
 
 enable_testing()

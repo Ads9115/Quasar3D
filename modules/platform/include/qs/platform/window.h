@@ -3,7 +3,11 @@
 struct GLFWwindow;
 
 namespace qs {
+    //Raw OpenGl func pointer and a func that looks one up by name.
+    using GLProc = void (*)();
+    using GLLoader = GLProc (*)(const char* name);
 
+    // One window for now
     class Window {
     public:
         Window(int width, int height, const char* title);
@@ -16,6 +20,9 @@ namespace qs {
         bool shouldClose() const;
         void pollEvents();
         void swapBuffers();
+
+        static GLProc getProcAddress(const char* name); // for the renderers lloader
+        void framebufferSize(int& width, int& height) const;
 
     private:
         GLFWwindow* m_window = nullptr;

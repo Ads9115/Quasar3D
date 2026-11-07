@@ -50,4 +50,12 @@ void Window::swapBuffers() {
     glfwSwapBuffers(m_window);
 }
 
+GLProc Window::getProcAddress(const char* name) {
+    return glfwGetProcAddress(name);
+}
+
+void Window::framebufferSize(int& width, int& height) const {
+    glfwGetFramebufferSize(m_window, &width, &height);
+}
+
 } // namespace qs

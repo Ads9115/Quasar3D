@@ -3,10 +3,14 @@
 #include <qs/core/log.h>
 #include <qs/physics/world.h>
 #include <qs/platform/window.h>
+#include <qs/renderer/renderer.h>
 
 int main() {
     qs::Window window(1280, 720, "Quasar3D");
     if (!window.ok()) return 1;
+
+    qs::Renderer renderer;
+    if (!renderer.init(&qs::Window::getProcAddress)) return 1;
 
     qs::Clock clock;
     qs::FixedTimestep fixed(1.0 / 60.0);
@@ -21,18 +25,22 @@ int main() {
     long totalSteps = 0;
 
     while (!window.shouldClose()) {
-        window.pollEvents();                         // 1. collect input
+        window.pollEvents();
 
-        const double frameTime = clock.tick();       // 2. measure real time
+        const double frameTime = clock.tick();
         realTime += frameTime;
 
-        const int n = fixed.advance(frameTime);      // 3. simulate
+        const int n = fixed.advance(frameTime);
         for (int i = 0; i < n; ++i) world.step(static_cast<float>(fixed.dt()));
         totalSteps += n;
 
-        // (drawing goes here in Step 3b)
+        int fbWidth = 0, fbHeight = 0;
+        window.framebufferSize(fbWidth, fbHeight);
+        renderer.beginFrame(fbWidth, fbHeight);
 
-        window.swapBuffers();                        // 4. show the frame; vsync paces the loop
+        // Later: draw physics state here, using fixed.alpha() to interpolate.
+
+        window.swapBuffers();
     }
 
     QS_LOG("app", "ran %.2f s, %ld physics steps (%.1f per second)",
