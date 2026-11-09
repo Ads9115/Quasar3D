@@ -20,6 +20,7 @@ namespace qs {
         bool shouldClose() const;
         void pollEvents();
         void swapBuffers();
+        GLFWwindow* handle() const { return m_window; }
 
         static GLProc getProcAddress(const char* name); // for the renderers lloader
         void framebufferSize(int& width, int& height) const;

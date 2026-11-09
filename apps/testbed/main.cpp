@@ -1,6 +1,7 @@
 #include <qs/core/clock.h>
 #include <qs/core/fixed_timestep.h>
 #include <qs/core/log.h>
+#include <qs/editor/editor.h>
 #include <qs/physics/world.h>
 #include <qs/platform/window.h>
 #include <qs/renderer/renderer.h>
@@ -11,6 +12,9 @@ int main() {
 
     qs::Renderer renderer;
     if (!renderer.init(&qs::Window::getProcAddress)) return 1;
+
+    qs::Editor editor;                          // declared after the window, so it is destroyed first
+    if (!editor.init(window)) return 1;
 
     qs::Clock clock;
     qs::FixedTimestep fixed(1.0 / 60.0);
@@ -38,7 +42,15 @@ int main() {
         window.framebufferSize(fbWidth, fbHeight);
         renderer.beginFrame(fbWidth, fbHeight);
 
-        // Later: draw physics state here, using fixed.alpha() to interpolate.
+        editor.beginFrame();
+        qs::FrameStats stats;
+        stats.frameMs = frameTime * 1000.0;
+        stats.stepsThisFrame = n;
+        stats.totalSteps = totalSteps;
+        stats.simTime = totalSteps * fixed.dt();
+        stats.alpha = fixed.alpha();
+        editor.drawStats(stats);
+        editor.endFrame();
 
         window.swapBuffers();
     }
