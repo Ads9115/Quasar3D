@@ -1,14 +1,24 @@
-#include <chrono>
-#include <cstdio>
-#include <thread>
-
 #include <qs/core/clock.h>
 #include <qs/core/fixed_timestep.h>
-#include <qs/physics/world.h>
 #include <qs/core/log.h>
-
+#include <qs/editor/editor.h>
+#include <qs/physics/world.h>
+#include <qs/platform/window.h>
+#include <qs/renderer/camera.h>
+#include <qs/renderer/renderer.h>
 
 int main() {
+    qs::Window window(1280, 720, "Quasar3D");
+    if (!window.ok()) return 1;
+
+    qs::Renderer renderer;
+    if (!renderer.init(&qs::Window::getProcAddress)) return 1;
+
+    qs::Editor editor;
+    if (!editor.init(window)) return 1;
+
+    qs::Camera camera;
+
     qs::Clock clock;
     qs::FixedTimestep fixed(1.0 / 60.0);
 
@@ -20,8 +30,10 @@ int main() {
 
     double realTime = 0.0;
     long totalSteps = 0;
+    int vpW = 800, vpH = 600;   // viewport panel size, as measured last frame
 
-    while (realTime < 2.0) {
+    while (!window.shouldClose()) {
+        window.pollEvents();
 
         const double frameTime = clock.tick();
         realTime += frameTime;
@@ -30,12 +42,38 @@ int main() {
         for (int i = 0; i < n; ++i) world.step(static_cast<float>(fixed.dt()));
         totalSteps += n;
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(3));
-    }
-    const double dt = fixed.dt();
-    const double expectedY = 100.0 - 9.81 * dt * dt * totalSteps * (totalSteps + 1) / 2.0;
+        // 1. Draw the 3D scene into the off-screen image.
+        renderer.beginScene(vpW, vpH, camera);
+        renderer.drawGrid();
+        // Later: bodies, debug lines.
+        renderer.endScene();
 
-    QS_LOG("app", "real time %.3f s, steps %ld, simulated %.3f s, bank %.4f s",
-           realTime, totalSteps, totalSteps * dt, fixed.accumulator());
-    QS_LOG("app", "y = %.4f, expected %.4f", world.particles[0].position.y, expectedY);
+        // 2. Clear the real window, then draw the editor on top of it.
+        int fbWidth = 0, fbHeight = 0;
+        window.framebufferSize(fbWidth, fbHeight);
+        renderer.beginFrame(fbWidth, fbHeight);
+
+        editor.beginFrame();
+        qs::FrameStats stats;
+        stats.frameMs = frameTime * 1000.0;
+        stats.stepsThisFrame = n;
+        stats.totalSteps = totalSteps;
+        stats.simTime = totalSteps * fixed.dt();
+        stats.alpha = fixed.alpha();
+        stats.viewportW = vpW;
+        stats.viewportH = vpH;
+        editor.drawStats(stats);
+
+        const qs::ViewportInput in = editor.drawViewport(renderer.sceneTexture(), vpW, vpH);
+        if (in.orbit) camera.orbit(in.dx, in.dy);
+        if (in.pan)   camera.pan(in.dx, in.dy, static_cast<float>(vpH));
+        if (in.scroll != 0.0f) camera.zoom(in.scroll);
+
+        editor.endFrame();
+
+        window.swapBuffers();
+    }
+
+    QS_LOG("app", "ran %.2f s, %ld physics steps (%.1f per second)",
+           realTime, totalSteps, totalSteps / realTime);
 }
