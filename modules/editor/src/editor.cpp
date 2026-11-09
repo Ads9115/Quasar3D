@@ -47,11 +47,28 @@ void Editor::drawStats(const FrameStats& s) {
     ImGui::Text("Total steps:      %ld", s.totalSteps);
     ImGui::Text("Simulated time:   %.2f s", s.simTime);
     ImGui::Text("Alpha:            %.3f", s.alpha);
+    ImGui::Text("Viewport:         %d x %d", s.viewportW, s.viewportH);
     ImGui::Separator();
     ImGui::Checkbox("Show ImGui demo window", &m_showDemo);
     ImGui::End();
 
     if (m_showDemo) ImGui::ShowDemoWindow(&m_showDemo);
+}
+
+void Editor::drawViewport(uint32_t sceneTexture, int& width, int& height) {
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::Begin("Viewport");
+
+    const ImVec2 size = ImGui::GetContentRegionAvail();
+    width = static_cast<int> (size.x);
+    height = static_cast<int> (size.y);
+
+    if (sceneTexture && width > 0 && height > 0) {
+        ImGui::Image((ImTextureID)(intptr_t)sceneTexture, size, ImVec2(0, 1), ImVec2(1, 0));
+    }
+
+    ImGui::End();
+    ImGui::PopStyleVar();
 }
 
 void Editor::endFrame() {

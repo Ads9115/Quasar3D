@@ -1,4 +1,6 @@
 #pragma once
+
+#include <cstdint>
 #include <qs/platform/window.h>
 
 namespace qs {
@@ -10,6 +12,8 @@ struct FrameStats {
     long totalSteps = 0;
     double simTime = 0.0;
     double alpha = 0.0;
+    int viewportW = 0;
+    int viewportH = 0;
 };
 
 class Editor {
@@ -22,6 +26,10 @@ public:
     bool init(Window& window);
     void beginFrame();
     void drawStats(const FrameStats& stats);
+    // Shows the scene image. Writes the panel's current size (pixels) into width/height,
+    // which the app uses to size next frame's scene render.
+    void drawViewport(uint32_t sceneTexture, int& width, int& height);
+
     void endFrame();
 
 private:

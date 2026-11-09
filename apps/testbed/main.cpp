@@ -28,6 +28,8 @@ int main() {
     double realTime = 0.0;
     long totalSteps = 0;
 
+    int vpW = 800, vpH = 600;
+
     while (!window.shouldClose()) {
         window.pollEvents();
 
@@ -37,6 +39,9 @@ int main() {
         const int n = fixed.advance(frameTime);
         for (int i = 0; i < n; ++i) world.step(static_cast<float>(fixed.dt()));
         totalSteps += n;
+
+        renderer.beginScene(vpW, vpH);
+        renderer.endScene();
 
         int fbWidth = 0, fbHeight = 0;
         window.framebufferSize(fbWidth, fbHeight);
@@ -49,9 +54,11 @@ int main() {
         stats.totalSteps = totalSteps;
         stats.simTime = totalSteps * fixed.dt();
         stats.alpha = fixed.alpha();
+        stats.viewportW = vpW;
+        stats.viewportH = vpH;
         editor.drawStats(stats);
+        editor.drawViewport(renderer.sceneTexture(), vpW, vpH);
         editor.endFrame();
-
         window.swapBuffers();
     }
 
