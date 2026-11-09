@@ -6,6 +6,8 @@
 ![Status](https://img.shields.io/badge/Status-In%20Development-orange)
 ![Language](https://img.shields.io/badge/Language-C%2B%2B-00599C)
 
+<img width="1882" height="1013" alt="image" src="https://github.com/user-attachments/assets/9b037d32-ec4b-4617-bb15-e2528c75e54c" />
+
 Quasar3D is an open-source, modular 3D physics engine project written in C++. It aims to provide a clear, reusable foundation for simulation in games and other real-time applications. Its modular design lets math, shared utilities, and physics evolve independently while remaining easy to combine in applications such as the included testbed. The project is in early development, and its APIs and capabilities will grow and change over time.
 
 ## Architecture
