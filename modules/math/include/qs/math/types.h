@@ -7,6 +7,7 @@ namespace qs {
     //naming the math types here
     using Vec3 = glm::vec3;
     using Mat3 = glm::mat3;
+    using Mat4 = glm::mat4;
     using Quat = glm::quat;
 
     constexpr float kEpsilon = 1e-6f; // "close enough to zero"

@@ -16,6 +16,13 @@ struct FrameStats {
     int viewportH = 0;
 };
 
+struct ViewportInput {
+    bool orbit = false;
+    bool pan = false;
+    float dx = 0.0f, dy = 0.0f;
+    float scroll = 0.0f;
+};
+
 class Editor {
 public:
     Editor() = default;
@@ -28,13 +35,14 @@ public:
     void drawStats(const FrameStats& stats);
     // Shows the scene image. Writes the panel's current size (pixels) into width/height,
     // which the app uses to size next frame's scene render.
-    void drawViewport(uint32_t sceneTexture, int& width, int& height);
+    ViewportInput drawViewport(uint32_t sceneTexture, int& width, int& height);
 
     void endFrame();
 
 private:
     bool m_initialized = false;
     bool m_showDemo = false;
+    bool m_dragging = false;
 };
 
 }

@@ -4,6 +4,7 @@
 #include <qs/editor/editor.h>
 #include <qs/physics/world.h>
 #include <qs/platform/window.h>
+#include <qs/renderer/camera.h>
 #include <qs/renderer/renderer.h>
 
 int main() {
@@ -13,8 +14,10 @@ int main() {
     qs::Renderer renderer;
     if (!renderer.init(&qs::Window::getProcAddress)) return 1;
 
-    qs::Editor editor;                          // declared after the window, so it is destroyed first
+    qs::Editor editor;
     if (!editor.init(window)) return 1;
+
+    qs::Camera camera;
 
     qs::Clock clock;
     qs::FixedTimestep fixed(1.0 / 60.0);
@@ -27,8 +30,7 @@ int main() {
 
     double realTime = 0.0;
     long totalSteps = 0;
-
-    int vpW = 800, vpH = 600;
+    int vpW = 800, vpH = 600;   // viewport panel size, as measured last frame
 
     while (!window.shouldClose()) {
         window.pollEvents();
@@ -40,9 +42,13 @@ int main() {
         for (int i = 0; i < n; ++i) world.step(static_cast<float>(fixed.dt()));
         totalSteps += n;
 
-        renderer.beginScene(vpW, vpH);
+        // 1. Draw the 3D scene into the off-screen image.
+        renderer.beginScene(vpW, vpH, camera);
+        renderer.drawGrid();
+        // Later: bodies, debug lines.
         renderer.endScene();
 
+        // 2. Clear the real window, then draw the editor on top of it.
         int fbWidth = 0, fbHeight = 0;
         window.framebufferSize(fbWidth, fbHeight);
         renderer.beginFrame(fbWidth, fbHeight);
@@ -57,8 +63,14 @@ int main() {
         stats.viewportW = vpW;
         stats.viewportH = vpH;
         editor.drawStats(stats);
-        editor.drawViewport(renderer.sceneTexture(), vpW, vpH);
+
+        const qs::ViewportInput in = editor.drawViewport(renderer.sceneTexture(), vpW, vpH);
+        if (in.orbit) camera.orbit(in.dx, in.dy);
+        if (in.pan)   camera.pan(in.dx, in.dy, static_cast<float>(vpH));
+        if (in.scroll != 0.0f) camera.zoom(in.scroll);
+
         editor.endFrame();
+
         window.swapBuffers();
     }
 

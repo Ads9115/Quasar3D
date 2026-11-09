@@ -13,6 +13,7 @@ bool Editor::init(Window &window) {
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;       // panels can snap together
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigWindowsMoveFromTitleBarOnly = true;   // dragging inside a panel must not move it
 
     ImGui::StyleColorsDark();
 
@@ -55,7 +56,7 @@ void Editor::drawStats(const FrameStats& s) {
     if (m_showDemo) ImGui::ShowDemoWindow(&m_showDemo);
 }
 
-void Editor::drawViewport(uint32_t sceneTexture, int& width, int& height) {
+ViewportInput Editor::drawViewport(uint32_t sceneTexture, int& width, int& height) {
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     ImGui::Begin("Viewport");
 
@@ -67,8 +68,23 @@ void Editor::drawViewport(uint32_t sceneTexture, int& width, int& height) {
         ImGui::Image((ImTextureID)(intptr_t)sceneTexture, size, ImVec2(0, 1), ImVec2(1, 0));
     }
 
+    ViewportInput in;
+    const ImGuiIO& io = ImGui::GetIO();
+    const bool hovered = ImGui::IsWindowHovered();
+    if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Middle)) m_dragging = true;
+    if (!ImGui::IsMouseDown(ImGuiMouseButton_Middle)) m_dragging = false;
+
+    if (m_dragging) {
+        in.orbit = !io.KeyShift;
+        in.pan = io.KeyShift;
+        in.dx = io.MouseDelta.x;
+        in.dy = io.MouseDelta.y;
+    }
+    if (hovered) in.scroll = io.MouseWheel;
+
     ImGui::End();
     ImGui::PopStyleVar();
+    return in;
 }
 
 void Editor::endFrame() {
